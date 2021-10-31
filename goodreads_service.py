@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 # TODO - move to designated models directory
-class SearchResult(BaseModel):
+class BookEntry(BaseModel):
     url: Optional[str]
     title: Optional[str]
 
@@ -19,6 +19,9 @@ class BookSelectionDetails(BaseModel):
     series: Optional[str]
     authors: List[str]
     genres: List[str]
+    related_books: List[BookEntry]
+    rating: str
+    pages: str
 
 
 class GoodreadsService:
@@ -32,7 +35,7 @@ class GoodreadsService:
             async with session.get(url) as response:
                 return BSoup(await response.text(), 'html.parser')
 
-    async def search_async(self, search_term: str) -> List[SearchResult]:
+    async def search_async(self, search_term: str) -> List[BookEntry]:
         # TODO - add caching
         sanitised_url: str = urllib.parse.quote(search_term)
         endpoint = f'{self.base_url}/search?query={sanitised_url}'
@@ -42,13 +45,13 @@ class GoodreadsService:
         # TODO - use a page pattern & make it faster
         if table_list is not None:
             top_results: ResultSet = table_list.find_all('tr', limit=5)
-            scraped_results: List[SearchResult] = []
+            scraped_results: List[BookEntry] = []
 
             for result in top_results:
 
                 url_obj: BSoup = result.find('a', class_='bookTitle')
 
-                search_result: SearchResult = SearchResult(title=url_obj.text.strip('\t\r\n'), url=url_obj['href'])
+                search_result: BookEntry = BookEntry(title=url_obj.text.strip('\t\r\n'), url=url_obj['href'])
                 scraped_results.append(search_result)
 
             return scraped_results
@@ -62,7 +65,7 @@ class GoodreadsService:
 
         return split_authors
 
-    async def parse_detailed_view_of_search_result_async(self, search_result: SearchResult) -> BookSelectionDetails:
+    async def parse_detailed_view_of_search_result_async(self, search_result: BookEntry) -> BookSelectionDetails:
 
         if search_result.url is None:
             raise ValueError('Passed search result has a missing URL')
@@ -80,11 +83,33 @@ class GoodreadsService:
 
         raw_authors: str = page_content.find(id='bookAuthors').text.replace('\n', ' ')
 
+        related_books_obj: ResultSet[BSoup] = page_content.select('[id^=bookCover]>a[href]')
+
+        related_books: List[BookEntry] = []
+
+        for book_obj in related_books_obj:
+
+            title: str = book_obj.select_one('img')['alt']
+
+            book_entry = BookEntry(
+                title=title,
+                url=book_obj['href']
+            )
+
+            related_books.append(book_entry)
+
+        rating = page_content.find('span', {'itemprop': 'ratingValue'}).text.strip('\n\r\t ')
+
+        pages = page_content.find('span', {'itemprop': 'numberOfPages'}).text.strip('\n\t\r ')
+
         return BookSelectionDetails(
             authors=self._parse_authors(raw_authors),
             description=description,
             cover_image_url=cover,
             genres=genres,
             title=title,
-            series=series
+            series=series,
+            related_books=related_books,
+            rating=rating,
+            pages=pages
         )
