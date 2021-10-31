@@ -6,6 +6,9 @@ from helpers.http_util import HttpUtil
 from helpers.string_helper import StringHelper
 from models.BookSelection import BookSelectionDetails, BookSelection
 
+# presumably speeds up scraping
+import cchardet
+
 
 class BookPageLocators:
     MAIN_CONTAINER = '.mainContent'
