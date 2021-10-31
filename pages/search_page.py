@@ -3,7 +3,7 @@ from typing import List
 
 from helpers.http_util import HttpUtil
 from models.BookSelection import BookSelection
-from bs4 import BeautifulSoup as BSoup, ResultSet
+from bs4 import BeautifulSoup as BSoup
 
 
 class SearchPageLocators:
@@ -24,7 +24,7 @@ class SearchPage:
         table_list: BSoup = page_content.select_one(SearchPageLocators.TABLE_LIST)
 
         if table_list is not None:
-            top_results: ResultSet = table_list.select(SearchPageLocators.TOP_RESULTS, limit=max_results)
+            top_results: List[BSoup] = table_list.select(SearchPageLocators.TOP_RESULTS, limit=max_results)
             scraped_results: List[BookSelection] = []
 
             for result in top_results:

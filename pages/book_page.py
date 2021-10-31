@@ -1,6 +1,6 @@
 from typing import List, Sequence
 
-from bs4 import BeautifulSoup as BSoup, ResultSet, Tag
+from bs4 import BeautifulSoup as BSoup
 
 from helpers.http_util import HttpUtil
 from helpers.string_helper import StringHelper
@@ -8,6 +8,10 @@ from models.BookSelection import BookSelectionDetails, BookSelection
 
 
 class BookPageLocators:
+    MAIN_CONTAINER = '.mainContent'
+    MAIN_CONTAINER_META = '#metacol'
+    DETAILS_PANEL = '#topcol'
+    RIGHT_CONTAINER = '.rightContainer'
     DESCRIPTION = '#description>span[style~="display:none"]'
     COVER = '#coverImage'
     TITLE = '#bookTitle'
@@ -54,15 +58,28 @@ class BookPage:
         endpoint = self.base_url + search_result.url
         page_content = await HttpUtil.bsoup_from_url_async(endpoint)
 
-        description = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.DESCRIPTION))
-        cover: str = page_content.select_one(BookPageLocators.COVER)['src']
-        title: str = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.TITLE))
-        series: str = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.SERIES))
-        raw_authors: str = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.AUTHORS))
-        rating = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.RATING))
-        pages = StringHelper.to_stripped_text(page_content.select_one(BookPageLocators.PAGES))
-        related_books_obj: ResultSet[BSoup] = page_content.select(BookPageLocators.RELATED_BOOKS)
-        genre_list_obj: ResultSet[BSoup] = page_content.select(BookPageLocators.GENRES)
+        main_content = page_content.select_one(BookPageLocators.MAIN_CONTAINER)
+
+        # top panel
+        details_panel = main_content.select_one(BookPageLocators.DETAILS_PANEL)
+
+        cover: str = details_panel.select_one(BookPageLocators.COVER)['src']
+
+        ## book meta container
+        meta_container = details_panel.select_one(BookPageLocators.MAIN_CONTAINER_META)
+
+        description = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.DESCRIPTION))
+        title: str = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.TITLE))
+        series: str = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.SERIES))
+        raw_authors: str = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.AUTHORS))
+        rating = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.RATING))
+        pages = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.PAGES))
+
+        # right side-panel
+        right_side_panel = main_content.select_one(BookPageLocators.RIGHT_CONTAINER)
+
+        related_books_obj: List[BSoup] = right_side_panel.select(BookPageLocators.RELATED_BOOKS)
+        genre_list_obj: List[BSoup] = right_side_panel.select(BookPageLocators.GENRES)
         genres: List[str] = [genre_obj.text for genre_obj in genre_list_obj]
 
         return BookSelectionDetails(
