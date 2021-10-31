@@ -70,8 +70,7 @@ class GoodreadsService:
         endpoint = self.base_url + search_result.url
         page_content = await self._bsoup_from_url_async(endpoint)
 
-        # TODO - will have to use selenium to click 'view more' -.-
-        description: str = page_content.find(id='description').text.strip('\r\n\t ')
+        description: str = page_content.find(id='description').select_one('span[style~="display:none"]').text.strip('\r\n\t ')
         # TODO - add safety checks
         cover: str = page_content.find(id='coverImage')['src']
         title: str = page_content.find(id='bookTitle').text.strip('\r\n\t ')
