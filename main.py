@@ -1,6 +1,6 @@
 import asyncio
 
-from goodreads_service import GoodreadsService, BookSelectionDetails
+from services.goodreads_service import GoodreadsService, BookSelectionDetails
 
 
 async def main():
