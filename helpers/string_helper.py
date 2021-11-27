@@ -1,6 +1,4 @@
-from ctypes import Union
-
-from bs4 import Tag, BeautifulSoup as BSoup
+from bs4 import BeautifulSoup as BSoup
 
 
 class StringHelper:

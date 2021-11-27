@@ -68,7 +68,7 @@ class BookPage:
 
         cover: str = details_panel.select_one(BookPageLocators.COVER)['src']
 
-        ## book meta container
+        # book meta container
         meta_container = details_panel.select_one(BookPageLocators.MAIN_CONTAINER_META)
 
         description = StringHelper.to_stripped_text(meta_container.select_one(BookPageLocators.DESCRIPTION))
