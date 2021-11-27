@@ -13,6 +13,24 @@ pip >=21.1.x
 * Clone the repo ```git clone git@github.com:bagool185/goodreads-scraper.git```
 * Install dependencies ```pip install -r requirements.txt```
 
+## Remote debugging azure functions
+
+**Note** if you're using PyCharm you'll need the Professional edition to set up Remote Debugging:
+
+Toolbar -> Run -> Edit configurations... -> Click on the '+' to add a new configuration -> Choose 'Python Debug Server'
+
+Set whichever host name and port you want and click 'OK'.
+
+Make sure this snippet is added at the top of a function's Python file:
+
+```py
+import pydevd_pycharm
+pydevd_pycharm.settrace(<your_host>, port=<your_port>, stdoutToServer=True, stderrToServer=True)
+```
+
+Start the debugger and set a breakpoint as you normally would, then run `func start` in the terminal.
+
+
 ## Scraping
 
 Scraping is done using BeautifulSoup with the lxml parser. The scraping scripts follow somewhat of a 
