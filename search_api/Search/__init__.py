@@ -1,11 +1,12 @@
-# black magic to make azure functions debuggable in pycharm
 import pydevd_pycharm
-pydevd_pycharm.settrace('localhost', port=12345, stdoutToServer=True)
+pydevd_pycharm.settrace('localhost', port=4020, stdoutToServer=True, stderrToServer=True)
+
 
 import azure.functions as func
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
+
     name = req.params.get('name')
     if not name:
         try:
@@ -19,7 +20,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
     else:
         return func.HttpResponse(
-            "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-            status_code=200
+             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+             status_code=200
         )
-
