@@ -32,8 +32,8 @@ class SearchPage:
 
         for result in top_results:
             url_obj: BSoup = result.select_one(SearchPageLocators.BOOK_TITLE)
-
-            search_result: BookSelection = BookSelection(title=url_obj.text.strip('\t\r\n'), url=f'www.goodreads.com{url_obj["href"]}')
+            stripped_url: str = f'www.goodreads.com{url_obj["href"]}'.split('?')[0]
+            search_result: BookSelection = BookSelection(title=url_obj.text.strip('\t\r\n'), url=stripped_url)
             scraped_results.append(search_result)
 
         return BookSelectionList(__root__=scraped_results)
