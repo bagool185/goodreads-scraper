@@ -1,8 +1,8 @@
 import urllib.parse
-from typing import List
+from typing import List, Optional
 
 from helpers.http_util import HttpUtil
-from models.BookSelection import BookSelection
+from models.BookSelection import BookSelection, BookSelectionList
 from bs4 import BeautifulSoup as BSoup
 
 # presumably speeds up scraping
@@ -20,7 +20,10 @@ class SearchPage:
     def __init__(self, base_url: str):
         self.url = f'{base_url}/search?query='
 
-    async def get_top_results_async(self, search_term: str, max_results: int = 5) -> List[BookSelection]:
+    async def get_top_results_async(self, search_term: str, max_results: Optional[int]) -> BookSelectionList:
+
+        max_results = max_results if max_results else 5
+
         sanitised_search_term: str = urllib.parse.quote(search_term)
 
         page_content: BSoup = await HttpUtil.bsoup_from_url_async(self.url + sanitised_search_term)
@@ -30,7 +33,7 @@ class SearchPage:
         for result in top_results:
             url_obj: BSoup = result.select_one(SearchPageLocators.BOOK_TITLE)
 
-            search_result: BookSelection = BookSelection(title=url_obj.text.strip('\t\r\n'), url=url_obj['href'])
+            search_result: BookSelection = BookSelection(title=url_obj.text.strip('\t\r\n'), url=f'www.goodreads.com{url_obj["href"]}')
             scraped_results.append(search_result)
 
-        return scraped_results
+        return BookSelectionList(__root__=scraped_results)
